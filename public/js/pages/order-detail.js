@@ -6,7 +6,7 @@ createApp({
 
     const el = document.getElementById('app');
     const orderId = el.dataset.orderId;
-    const paymentResult = ref(el.dataset.paymentResult || null);
+    const paymentResult = ref(null);
 
     const order = ref(null);
     const loading = ref(true);
@@ -24,25 +24,48 @@ createApp({
       cancel: { text: '付款已取消。', cls: 'bg-apricot/10 text-apricot border border-apricot/20' },
     };
 
-    async function simulatePay(action) {
+    async function handleEcpayCheckout() {
       if (!order.value || paying.value) return;
       paying.value = true;
       try {
-        const res = await apiFetch('/api/orders/' + order.value.id + '/pay', {
-          method: 'PATCH',
-          body: JSON.stringify({ action })
-        });
-        order.value = res.data;
-        paymentResult.value = action === 'success' ? 'success' : 'failed';
+        const res = await apiFetch('/api/orders/' + order.value.id + '/ecpay-checkout');
+        const { ecpayUrl, params } = res.data;
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = ecpayUrl;
+
+        for (const [key, value] of Object.entries(params)) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
       } catch (e) {
-        Notification.show('付款處理失敗', 'error');
-      } finally {
+        Notification.show('無法建立付款，請稍後再試', 'error');
         paying.value = false;
       }
     }
 
-    function handlePaySuccess() { simulatePay('success'); }
-    function handlePayFail() { simulatePay('fail'); }
+    async function verifyEcpayPayment() {
+      paying.value = true;
+      // 移除 URL query param，避免重新整理重複驗證
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState(null, '', cleanUrl);
+      try {
+        const res = await apiFetch('/api/orders/' + orderId + '/ecpay-verify', { method: 'POST' });
+        order.value = res.data;
+        paymentResult.value = res.data.status === 'paid' ? 'success' : 'failed';
+      } catch (e) {
+        Notification.show('查詢付款結果失敗，請重新整理頁面', 'error');
+      } finally {
+        paying.value = false;
+      }
+    }
 
     onMounted(async function () {
       try {
@@ -53,8 +76,14 @@ createApp({
       } finally {
         loading.value = false;
       }
+
+      // 從綠界付款頁返回時自動驗證
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('from') === 'ecpay') {
+        await verifyEcpayPayment();
+      }
     });
 
-    return { order, loading, paying, paymentResult, statusMap, paymentMessages, handlePaySuccess, handlePayFail };
+    return { order, loading, paying, paymentResult, statusMap, paymentMessages, handleEcpayCheckout };
   }
 }).mount('#app');
