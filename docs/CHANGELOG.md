@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-27
+
+### Added
+- 綠界 ECPay AIO 金流串接：信用卡付款表單（GET /api/orders/:id/ecpay-checkout）、ReturnURL 回呼驗證（POST /api/ecpay/notify）、QueryTradeInfo 主動確認付款狀態（POST /api/orders/:id/ecpay-verify）
+- CheckMacValue SHA-256 簽章（含 .NET URL encode 相容、timing-safe 比較）
+
+### Docs
+- 補充 docs/FEATURES.md 綠界 AIO 金流完整段落（流程、業務邏輯、錯誤碼）
+- 新增 docs/plans/archive/2026-05-27-ecpay-aio-checkout.md 計畫歸檔
+- .claude/skills/init-project-docs 改為子目錄結構（init-project-docs/SKILL.md）
+
 ## [1.0.0] - 2026-05-26
 
 ### Added
