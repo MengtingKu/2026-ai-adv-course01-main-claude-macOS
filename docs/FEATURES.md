@@ -9,6 +9,7 @@
 | 購物車（訪客 + 登入雙模式） | 完成 |
 | 訂單建立（Transaction） | 完成 |
 | 模擬付款 | 完成 |
+| 綠界 AIO 金流（信用卡付款 + QueryTradeInfo 驗證） | 完成 |
 | 管理員商品 CRUD | 完成 |
 | 管理員訂單查看 | 完成 |
 | SSR 前端頁面 | 完成 |
@@ -155,6 +156,76 @@
 | 庫存不足 | 400 | STOCK_INSUFFICIENT |
 | 訂單不存在或不屬於當前用戶 | 404 | NOT_FOUND |
 | 訂單已付款或失敗，不能再次付款 | 400 | INVALID_STATUS |
+
+---
+
+## 綠界 AIO 金流
+
+### 端點
+
+| Method | 路徑 | 認證 |
+|--------|------|------|
+| GET | /api/orders/:id/ecpay-checkout | JWT |
+| POST | /api/ecpay/notify | 無（ECPay Server 回呼） |
+| POST | /api/orders/:id/ecpay-verify | JWT |
+
+### 付款流程
+
+```
+前端 → GET /api/orders/:id/ecpay-checkout → 取得 ecpayUrl + params
+    → 以 HTML form POST 跳轉至 ecpayUrl（綠界付款頁）
+    → 使用者付款完成
+ECPay Server → POST /api/ecpay/notify（ReturnURL，server-to-server）
+    → 驗證 CheckMacValue → 更新訂單 status = 'paid'
+前端（ClientBackURL 回導後） → POST /api/orders/:id/ecpay-verify
+    → 呼叫 QueryTradeInfo 主動確認 → 更新並回傳最新訂單
+```
+
+### GET /api/orders/:id/ecpay-checkout
+
+- 訂單不屬於當前用戶 → 404 NOT_FOUND
+- 訂單 status 不是 `pending` → 400 INVALID_STATUS
+- 成功回傳 `{ ecpayUrl, params }`，params 已包含 CheckMacValue
+- 商品名稱格式：`花名 x數量#花名 x數量`（最多 400 字元）
+
+### POST /api/ecpay/notify（ReturnURL）
+
+- 無論驗證是否通過，**一律回傳純文字 `1|OK`**（避免 ECPay 重試）
+- CheckMacValue 驗證失敗 → 靜默忽略，仍回 `1|OK`
+- `RtnCode === '1'` 且 MerchantTradeNo 比對成功 → 將對應訂單更新為 `paid`
+- MerchantTradeNo 由 order_no 移除非英數字元後截取前 20 字元得出
+
+### POST /api/orders/:id/ecpay-verify
+
+- 訂單已有最終狀態（`paid` / `failed`）→ **冪等回傳**，不呼叫 ECPay API
+- 呼叫 QueryTradeInfo API，回應 CheckMacValue 驗證失敗 → 500 ECPAY_QUERY_ERROR
+- `TradeStatus === '1'` → 更新為 `paid`，否則更新為 `failed`
+- 15 秒逾時（AbortSignal.timeout(15000)）
+
+### CheckMacValue 規格
+
+- 演算法：SHA-256（`EncryptType: '1'`）
+- 欄位排序：case-insensitive 字典序，排除 `CheckMacValue` 自身
+- URL encode：`.NET HttpUtility.UrlEncode` 相容模式（`%20` → `+`、結果轉小寫、還原 `-_.*!()`）
+- 格式：`HashKey={key}&{sorted_params}&HashIV={iv}` → SHA-256 → 大寫 hex
+- 驗證使用 `crypto.timingSafeEqual` 防止 timing attack
+
+### 環境變數
+
+| 變數 | 必要 | 說明 |
+|------|------|------|
+| `ECPAY_MERCHANT_ID` | 是 | 綠界商店代號 |
+| `ECPAY_HASH_KEY` | 是 | CheckMacValue 簽章金鑰 |
+| `ECPAY_HASH_IV` | 是 | CheckMacValue 簽章 IV |
+| `ECPAY_ENV` | 否 | `staging`（預設）或 `production` |
+
+### 錯誤碼
+
+| 情境 | HTTP | error |
+|------|------|-------|
+| 訂單不存在或不屬於當前用戶 | 404 | NOT_FOUND |
+| 訂單狀態不是 pending | 400 | INVALID_STATUS |
+| QueryTradeInfo 呼叫失敗 | 500 | ECPAY_QUERY_ERROR |
 
 ---
 
