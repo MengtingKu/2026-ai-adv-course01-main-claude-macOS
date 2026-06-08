@@ -1,17 +1,20 @@
-<aside class="w-60 bg-gray-900 text-white min-h-full">
-  <nav class="py-4">
+<aside class="admin-sidebar w-60 min-h-full flex flex-col">
+  <div class="px-5 py-4" style="border-bottom: 1px solid rgba(201,169,110,0.1);">
+    <p class="text-xs tracking-widest" style="color: var(--color-gold); opacity: 0.7; font-family: 'Noto Serif TC', serif;">管理後台</p>
+  </div>
+  <nav class="py-3 flex-1">
     <a
       href="/admin/products"
-      class="flex items-center gap-3 px-6 py-3 text-sm transition-colors hover:text-white hover:bg-gray-800 <%= typeof currentPath !== 'undefined' && currentPath === '/admin/products' ? 'bg-gray-800 !text-white border-r-2 border-rose-primary' : 'text-gray-400' %>"
+      class="admin-nav-link <%= typeof currentPath !== 'undefined' && currentPath === '/admin/products' ? 'active' : '' %>"
     >
-      <span>&#128230;</span>
+      <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;">inventory_2</span>
       <span>商品管理</span>
     </a>
     <a
       href="/admin/orders"
-      class="flex items-center gap-3 px-6 py-3 text-sm transition-colors hover:text-white hover:bg-gray-800 <%= typeof currentPath !== 'undefined' && currentPath === '/admin/orders' ? 'bg-gray-800 !text-white border-r-2 border-rose-primary' : 'text-gray-400' %>"
+      class="admin-nav-link <%= typeof currentPath !== 'undefined' && currentPath === '/admin/orders' ? 'active' : '' %>"
     >
-      <span>&#128196;</span>
+      <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;">receipt_long</span>
       <span>訂單管理</span>
     </a>
   </nav>

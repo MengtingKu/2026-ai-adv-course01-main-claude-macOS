@@ -1,39 +1,138 @@
-<div id="app">
-  <h1 class="text-2xl font-bold text-text-primary mb-6" style="font-family: 'Noto Serif TC', serif;">我的訂單</h1>
+<style>
+  .order-row {
+    background: rgba(26, 40, 30, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(201, 169, 110, 0.2);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    transition: border-color 0.25s;
+  }
+  .order-row:hover { border-color: rgba(201, 169, 110, 0.5); }
+  .filter-tab {
+    padding: 0.5rem 0.25rem 0.75rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8A897F;
+    cursor: pointer;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-tab.active { color: #C9A96E; border-bottom-color: #C9A96E; }
+  .filter-tab:hover:not(.active) { color: #C8C4BA; }
+  .status-pending { background: rgba(201,169,110,0.12); color: #C9A96E; }
+  .status-paid    { background: rgba(127,175,135,0.12); color: #7FAF87; }
+  .status-failed  { background: rgba(239,68,68,0.1);   color: #ef4444; }
+  .thumb-stack { position: relative; display: flex; align-items: center; }
+  .thumb-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #0F1C14;
+    background: rgba(26,40,30,0.9);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .thumb-circle + .thumb-circle { margin-left: -12px; }
+  .thumb-circle img { width: 100%; height: 100%; object-fit: cover; }
+</style>
 
-  <div v-if="loading" class="flex justify-center py-12">
-    <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+<div id="app" class="py-16 px-4 md:px-16 lg:px-24 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <header class="flex justify-between items-end pb-6 mb-10 border-b" style="border-color:rgba(201,169,110,0.3);">
+    <h1 class="text-4xl md:text-5xl" style="font-family:'EB Garamond',serif; color:#F7F4EE;">我的訂單 / My Orders</h1>
+  </header>
+
+  <!-- Filter Tabs -->
+  <div class="flex gap-6 border-b mb-8 overflow-x-auto" style="border-color:rgba(201,169,110,0.15);">
+    <button @click="filterTab = 'all'"     class="filter-tab" :class="{ active: filterTab === 'all' }">全部</button>
+    <button @click="filterTab = 'pending'" class="filter-tab" :class="{ active: filterTab === 'pending' }">待付款</button>
+    <button @click="filterTab = 'paid'"    class="filter-tab" :class="{ active: filterTab === 'paid' }">已付款</button>
+    <button @click="filterTab = 'failed'"  class="filter-tab" :class="{ active: filterTab === 'failed' }">付款失敗</button>
   </div>
 
-  <div v-else-if="orders.length === 0" class="text-center py-12">
-    <div class="text-4xl mb-3">&#128230;</div>
-    <p class="text-text-secondary mb-1">尚無訂單</p>
-    <p class="text-text-muted text-sm mb-4">快去選購喜歡的花束吧！</p>
-    <a href="/" class="inline-block bg-rose-primary text-white px-6 py-2 rounded-full text-sm hover:bg-rose-dark transition-colors">去逛逛</a>
+  <!-- Loading -->
+  <div v-if="loading" class="flex justify-center py-16">
+    <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid rgba(201,169,110,0.3); border-top-color:#C9A96E;"></div>
   </div>
 
-  <div v-else class="space-y-4">
-    <a
-      v-for="order in orders"
-      :key="order.id"
-      :href="'/orders/' + order.id"
-      class="block bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition-shadow"
-    >
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm text-text-secondary">訂單編號：{{ order.order_no }}</p>
-          <p class="text-xs text-text-muted mt-1">{{ new Date(order.created_at).toLocaleDateString('zh-TW') }}</p>
+  <!-- Empty State -->
+  <div v-else-if="filteredOrders.length === 0" class="text-center py-24" style="position:relative;">
+    <!-- Botanical illustration background -->
+    <div style="position:absolute; inset:0; background-image:url('https://lh3.googleusercontent.com/aida/AP1WRLvlGpo0tsi9clZEjovQqiqdGI-13M50FmLPRGgB1QpsYu-QnCMNxAf3ccrr5X7hreMHdDVMn8k75RmWEo84ghdvoH8P2WEYQQbg5eZ-9HRUUJ1wZuwDvAEOty9jaL_56brKgIXd6muwHWnH7v-4NjFLgMULEKqGBkXMLeUXt0Iq7PsX3d0nPi0dfry_z5U0qmmKIRZNFCbOYpwo6L7Kt0TewJQmI3vwqGhMTQOFCdXwyiEzoxmXNJXOqHY'); background-size:50%; background-repeat:no-repeat; background-position:center; opacity:0.18; pointer-events:none;"></div>
+    <div style="position:relative; z-index:1;">
+      <h2 class="text-3xl mb-3" style="font-family:'EB Garamond',serif; color:#C9A96E;">
+        <template v-if="orders.length === 0">尚無訂單</template>
+        <template v-else>此分類無訂單</template>
+      </h2>
+      <p class="text-sm mb-10" style="color:#C8C4BA;">
+        <template v-if="orders.length === 0">您的花藝收藏尚是一片靜謐的空白</template>
+        <template v-else>請選擇其他篩選條件</template>
+      </p>
+      <a v-if="orders.length === 0" href="/"
+         class="inline-block py-3 px-10 text-xs font-semibold uppercase tracking-widest hover:opacity-80 transition-opacity"
+         style="background:#C9A96E; color:#0F1C14;">開始選購</a>
+    </div>
+  </div>
+
+  <!-- Order List -->
+  <div v-else class="space-y-3">
+    <a v-for="order in filteredOrders" :key="order.id"
+       :href="'/orders/' + order.id"
+       class="order-row">
+
+      <!-- Left: Order No + Date -->
+      <div style="min-width:120px; flex-shrink:0;">
+        <p class="text-xs font-semibold uppercase tracking-widest" style="color:#8A897F; font-size:10px;">{{ order.order_no?.slice(0,12) }}</p>
+        <p class="text-xs mt-1" style="color:#8A897F;">{{ new Date(order.created_at).toLocaleDateString('zh-TW') }}</p>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden md:block w-px self-stretch" style="background:rgba(201,169,110,0.15); flex-shrink:0;"></div>
+
+      <!-- Middle: Product thumbnails + name -->
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <!-- Overlapping circles -->
+        <div class="thumb-stack flex-shrink-0" v-if="order.items && order.items.length">
+          <div v-for="(item, idx) in order.items.slice(0, 3)" :key="idx" class="thumb-circle">
+            <img v-if="item.image_url" :src="item.image_url" :alt="item.product_name" />
+            <span v-else class="material-symbols-outlined" style="font-size:18px; color:#8A897F;">local_florist</span>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="font-bold text-text-primary">NT$ {{ order.total_amount.toLocaleString() }}</span>
-          <span
-            class="text-xs px-3 py-1 rounded-full font-medium"
-            :class="statusMap[order.status]?.cls || 'bg-gray-100 text-gray-600'"
-          >
-            {{ statusMap[order.status]?.label || order.status }}
-          </span>
-          <span class="text-text-muted">&#8594;</span>
+        <div class="min-w-0">
+          <p class="text-sm truncate" style="font-family:'EB Garamond',serif; color:#F7F4EE;">
+            <template v-if="order.items && order.items.length">
+              {{ order.items[0].product_name }}<span v-if="order.items.length > 1" style="color:#8A897F;"> 等 {{ order.items.length }} 件</span>
+            </template>
+          </p>
         </div>
+      </div>
+
+      <!-- Right: Status + Price + Arrow -->
+      <div class="flex items-center gap-4 flex-shrink-0">
+        <span class="hidden sm:inline-block text-xs font-semibold uppercase tracking-widest px-3 py-1"
+              :class="statusMap[order.status]?.cls"
+              style="border-radius:2px;">
+          {{ statusMap[order.status]?.label || order.status }}
+        </span>
+        <span class="text-lg" style="font-family:'EB Garamond',serif; color:#C9A96E; white-space:nowrap;">
+          NT$ {{ order.total_amount.toLocaleString() }}
+        </span>
+        <span class="material-symbols-outlined" style="color:#8A897F; font-size:20px;">arrow_forward</span>
       </div>
     </a>
   </div>

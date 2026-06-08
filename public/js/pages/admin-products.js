@@ -1,4 +1,16 @@
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, onMounted, nextTick } = Vue;
+
+// 開啟對話框時，把焦點移離觸發按鈕，避免按鈕仍保有鍵盤焦點
+// 而在 Enter/Space/重新整理（瀏覽器還原焦點）時被再次觸發而重開對話框。
+function moveFocusToDialog(selector) {
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
+  nextTick(function () {
+    const target = document.querySelector(selector);
+    if (target) target.focus();
+  });
+}
 
 createApp({
   setup() {
@@ -32,6 +44,7 @@ createApp({
       editingProduct.value = null;
       form.value = { name: '', description: '', price: 0, stock: 0, image_url: '' };
       modalVisible.value = true;
+      moveFocusToDialog('#product-modal [data-autofocus]');
     }
 
     function openEdit(product) {
@@ -44,6 +57,7 @@ createApp({
         image_url: product.image_url,
       };
       modalVisible.value = true;
+      moveFocusToDialog('#product-modal [data-autofocus]');
     }
 
     async function handleSave() {
@@ -78,6 +92,7 @@ createApp({
     function confirmDeleteFn(id) {
       deleteId.value = id;
       confirmVisible.value = true;
+      moveFocusToDialog('#confirm-dialog [data-autofocus]');
     }
 
     async function handleDelete() {
@@ -91,8 +106,16 @@ createApp({
       }
     }
 
+    function onKeydown(e) {
+      if (e.key === 'Escape') {
+        confirmVisible.value = false;
+        modalVisible.value = false;
+      }
+    }
+
     onMounted(function () {
       loadProducts();
+      document.addEventListener('keydown', onKeydown);
     });
 
     return {

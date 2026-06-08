@@ -3,7 +3,7 @@
 <%- include('../partials/head') %>
 <body class="min-h-screen flex flex-col">
   <%- include('../partials/header') %>
-  <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+  <main class="flex-1 pt-[76px]">
     <%- body %>
   </main>
   <%- include('../partials/footer') %>
@@ -17,5 +17,6 @@
   <% if (typeof pageScript !== 'undefined' && pageScript) { %>
   <script src="/js/pages/<%= pageScript %>.js"></script>
   <% } %>
+  <script src="/js/motion.js"></script>
 </body>
 </html>
