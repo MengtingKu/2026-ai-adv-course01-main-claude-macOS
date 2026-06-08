@@ -1,78 +1,161 @@
-<div id="app" data-product-id="<%= productId %>">
-  <div v-if="loading" class="flex justify-center py-12">
-    <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+<div id="app" data-product-id="<%= productId %>" class="max-w-[1280px] mx-auto px-10 py-10">
+
+  <!-- Loading -->
+  <div v-if="loading" class="flex justify-center py-32">
+    <div class="w-7 h-7 border-2 border-[#C9A96E] border-t-transparent rounded-full animate-spin"></div>
   </div>
 
-  <div v-else-if="notFound" class="text-center py-16">
-    <div class="text-5xl mb-4">&#127804;</div>
-    <h2 class="text-xl font-medium text-text-primary mb-2">找不到此商品</h2>
-    <a href="/" class="text-rose-primary hover:text-rose-dark text-sm">回到首頁</a>
+  <!-- Not found -->
+  <div v-else-if="notFound" class="text-center py-32">
+    <div class="text-5xl mb-5">&#127804;</div>
+    <h2 class="mb-3 text-[#F7F4EE]" style="font-family:'EB Garamond',serif; font-size:1.75rem;">找不到此商品</h2>
+    <a href="/" class="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#C9A96E] border-b border-[rgba(201,169,110,0.4)] pb-0.5 hover:opacity-80 transition-opacity">回到首頁</a>
   </div>
 
-  <div v-else-if="product" class="flex flex-col md:flex-row gap-8 md:gap-12">
-    <!-- Left: Image -->
-    <div class="md:w-1/2">
-      <div class="rounded-2xl overflow-hidden shadow-sm">
-        <img
-          :src="product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=600'"
-          :alt="product.name"
-          class="w-full aspect-square object-cover"
-        />
-      </div>
-    </div>
+  <!-- Main content -->
+  <div v-else-if="product">
 
-    <!-- Right: Info -->
-    <div class="md:w-1/2">
-      <h1 class="text-2xl md:text-3xl font-bold text-text-primary mb-2" style="font-family: 'Noto Serif TC', serif;">
-        {{ product.name }}
-      </h1>
-      <p class="text-3xl text-rose-primary font-bold mb-4">NT$ {{ product.price.toLocaleString() }}</p>
+    <!-- Breadcrumbs -->
+    <nav class="mb-8 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8A897F]">
+      <a href="/" class="hover:text-[#C9A96E] transition-colors">首頁</a>
+      <span class="mx-1.5 text-[rgba(201,169,110,0.35)]">/</span>
+      <a href="/#products" class="hover:text-[#C9A96E] transition-colors">花藝系列</a>
+      <span class="mx-1.5 text-[rgba(201,169,110,0.35)]">/</span>
+      <span class="text-[#C9A96E]">{{ product.name }}</span>
+    </nav>
 
-      <div class="mb-6">
-        <span class="text-sage text-sm">&#10003; 尚有 {{ product.stock }} 件</span>
-      </div>
+    <!-- Main grid: 55% image / 45% details -->
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-10">
 
-      <p class="text-text-secondary leading-relaxed mb-6">{{ product.description }}</p>
-
-      <!-- Quantity Selector -->
-      <div class="flex items-center gap-4 mb-6">
-        <span class="text-sm text-text-secondary">數量</span>
-        <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-          <button
-            @click="decrease"
-            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-text-secondary transition-colors"
-          >
-            -
-          </button>
-          <span class="w-12 h-10 flex items-center justify-center text-sm border-x border-gray-200">
-            {{ quantity }}
-          </span>
-          <button
-            @click="increase"
-            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-text-secondary transition-colors"
-          >
-            +
-          </button>
+      <!-- Left: Image -->
+      <div class="w-full lg:w-[55%]">
+        <div class="relative w-full aspect-[4/5] rounded-2xl overflow-hidden border border-[rgba(201,169,110,0.25)] bg-[#0a1610]"
+             style="box-shadow: 0 8px 40px rgba(5,10,7,0.55);">
+          <img
+            :src="product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=700&q=80'"
+            :alt="product.name"
+            class="w-full h-full object-cover"
+          />
+          <!-- Vignette overlay -->
+          <div class="absolute inset-0 pointer-events-none"
+               style="background: radial-gradient(ellipse at center, transparent 45%, rgba(15,28,20,0.72) 100%);"></div>
         </div>
       </div>
 
-      <button
-        @click="addToCart"
-        :disabled="adding || product.stock <= 0"
-        class="w-full bg-rose-primary text-white py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition-colors disabled:opacity-50"
-      >
-        {{ product.stock <= 0 ? '已售完' : '加入購物車' }}
-      </button>
+      <!-- Right: Details -->
+      <div class="w-full lg:w-[45%] flex flex-col">
 
-      <!-- Purchase Notes -->
-      <div class="mt-8 bg-blush rounded-xl p-5">
-        <h3 class="font-medium text-text-primary mb-2 text-sm">購買須知</h3>
-        <ul class="text-text-muted text-xs space-y-1.5">
-          <li>- 花材依據季節供應，實際花束可能略有差異</li>
-          <li>- 台北市區可享當日配送服務</li>
-          <li>- 消費滿 NT$ 500 享免運優惠</li>
-        </ul>
+        <!-- Badge -->
+        <div class="mb-5">
+          <span class="inline-block px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#C9A96E] rounded-full border border-[rgba(201,169,110,0.4)]"
+                style="background: rgba(201,169,110,0.06); backdrop-filter: blur(8px);">
+            精選職人作品
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="mb-5 leading-tight text-[#C9A96E]"
+            style="font-family:'EB Garamond',serif; font-size:clamp(2rem,3.5vw,3rem); font-weight:500;">
+          {{ product.name }}
+        </h1>
+
+        <!-- Price + stock -->
+        <div class="mb-6">
+          <p class="text-[#C9A96E]" style="font-size:1.75rem; font-weight:400;">
+            NT$ {{ product.price.toLocaleString() }}
+          </p>
+          <p class="mt-1.5 text-[12px] tracking-wide">
+            <span v-if="product.stock > 0" class="text-[#7FAF87]">尚有 {{ product.stock }} 件</span>
+            <span v-else class="text-[#b87676]">已售完</span>
+          </p>
+        </div>
+
+        <!-- Gold gradient divider -->
+        <div class="w-full h-px mb-6"
+             style="background: linear-gradient(to right, rgba(201,169,110,0.55), rgba(201,169,110,0.1), transparent);"></div>
+
+        <!-- Description -->
+        <div class="mb-10 text-[#C8C4BA] leading-relaxed" style="font-family:'Source Serif 4','Noto Serif TC',serif; font-size:0.9375rem;">
+          {{ product.description || '精選職人手作花藝，以最純粹的自然美學，為您的日常注入靜謐優雅。' }}
+        </div>
+
+        <!-- Quantity + CTA -->
+        <div class="flex flex-col gap-4 mb-10">
+          <!-- Quantity selector -->
+          <div class="flex items-center gap-5">
+            <span class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#F7F4EE]">數量</span>
+            <div class="flex items-center border border-[rgba(201,169,110,0.3)]"
+                 style="background: rgba(26,46,34,0.5);">
+              <button
+                @click="decrease"
+                class="w-10 h-10 flex items-center justify-center text-[#C8C4BA] hover:text-[#C9A96E] transition-colors"
+                style="font-size:1.1rem;"
+              >−</button>
+              <span class="w-12 h-10 flex items-center justify-center text-[#F7F4EE] text-sm font-medium border-x border-[rgba(201,169,110,0.2)]">
+                {{ quantity }}
+              </span>
+              <button
+                @click="increase"
+                class="w-10 h-10 flex items-center justify-center text-[#C8C4BA] hover:text-[#C9A96E] transition-colors"
+                style="font-size:1.1rem;"
+              >+</button>
+            </div>
+          </div>
+
+          <!-- Add to cart -->
+          <button
+            @click="addToCart"
+            :disabled="adding || product.stock <= 0"
+            class="w-full py-4 text-[11px] font-semibold uppercase tracking-[0.15em] bg-[#C9A96E] text-[#0F1C14] hover:bg-[#b8945d] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style="box-shadow: 0 4px 20px rgba(201,169,110,0.2);"
+          >
+            {{ product.stock <= 0 ? '已售完' : (adding ? '加入中…' : '加入購物袋') }}
+          </button>
+        </div>
+
+        <!-- Delivery info card -->
+        <div class="rounded-xl border border-[rgba(201,169,110,0.25)] overflow-hidden"
+             style="background: rgba(26,46,34,0.45); backdrop-filter: blur(16px);">
+          <div class="p-6">
+            <h3 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C9A96E] mb-4">
+              <span class="material-symbols-outlined" style="font-size:16px; font-variation-settings:'wght' 300;">local_shipping</span>
+              配送資訊
+            </h3>
+            <ul class="space-y-3 text-[13px] text-[#8A897F] leading-relaxed">
+              <li class="flex items-start gap-3">
+                <span class="mt-[7px] shrink-0 w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></span>
+                花材依據季節供應，實際花束可能略有差異
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-[7px] shrink-0 w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></span>
+                台北市區可享當日配送，12:00 前下單當日送達
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-[7px] shrink-0 w-1.5 h-1.5 rounded-full bg-[#C9A96E]"></span>
+                消費滿 NT$ 500 享免運優惠
+              </li>
+            </ul>
+          </div>
+        </div>
+
       </div>
     </div>
+
+    <!-- Product Tabs -->
+    <div class="mt-20 pt-10 border-t border-[rgba(201,169,110,0.18)]">
+      <div class="flex gap-8 mb-8 border-b border-[rgba(201,169,110,0.14)]">
+        <button class="pb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#C9A96E] border-b border-[#C9A96E]">商品詳情</button>
+        <button class="pb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8A897F] hover:text-[#C9A96E] transition-colors">保養方式</button>
+        <button class="pb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#8A897F] hover:text-[#C9A96E] transition-colors">花材產地</button>
+      </div>
+      <div class="max-w-3xl text-[#C8C4BA] leading-relaxed" style="font-family:'Source Serif 4','Noto Serif TC',serif; font-size:0.9375rem;">
+        <p class="mb-4">{{ product.description || '精選職人手作花藝，以最純粹的自然美學，為您的日常注入靜謐優雅。' }}</p>
+        <p class="text-[#8A897F] text-sm mt-4">
+          花材依產季調整，如有特殊需求請來電洽詢。<br>
+          建議保鮮期：適當照料下約 7–10 天。
+        </p>
+      </div>
+    </div>
+
   </div>
 </div>

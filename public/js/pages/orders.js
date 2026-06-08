@@ -1,4 +1,4 @@
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, computed, onMounted } = Vue;
 
 createApp({
   setup() {
@@ -6,12 +6,18 @@ createApp({
 
     const orders = ref([]);
     const loading = ref(true);
+    const filterTab = ref('all');
 
     const statusMap = {
-      pending: { label: '待付款', cls: 'bg-apricot/20 text-apricot' },
-      paid: { label: '已付款', cls: 'bg-sage/20 text-sage' },
-      failed: { label: '付款失敗', cls: 'bg-red-100 text-red-600' },
+      pending: { label: '待付款', cls: 'status-pending' },
+      paid:    { label: '已付款', cls: 'status-paid' },
+      failed:  { label: '付款失敗', cls: 'status-failed' },
     };
+
+    const filteredOrders = computed(function () {
+      if (filterTab.value === 'all') return orders.value;
+      return orders.value.filter(function (o) { return o.status === filterTab.value; });
+    });
 
     onMounted(async function () {
       try {
@@ -24,6 +30,6 @@ createApp({
       }
     });
 
-    return { orders, loading, statusMap };
+    return { orders, filteredOrders, loading, statusMap, filterTab };
   }
 }).mount('#app');

@@ -1,87 +1,138 @@
-<div id="app">
-  <h1 class="text-2xl font-bold text-text-primary mb-6" style="font-family: 'Noto Serif TC', serif;">結帳</h1>
+<style>
+  .checkout-panel {
+    background: rgba(26, 40, 30, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(201, 169, 110, 0.25);
+    border-radius: 2px;
+  }
+  .checkout-input {
+    display: block;
+    width: 100%;
+    background: #15221a;
+    border: 1px solid rgba(201, 169, 110, 0.2);
+    color: #F7F4EE;
+    border-radius: 2px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .checkout-input::placeholder { color: #8A897F; }
+  .checkout-input:focus { border-color: #C9A96E; }
+  .checkout-input.has-error { border-color: rgba(239, 68, 68, 0.6); }
+</style>
 
-  <div v-if="loading" class="flex justify-center py-12">
-    <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+<div id="app" class="py-16 px-4 md:px-16 lg:px-24 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <header class="flex justify-between items-end pb-6 mb-10 border-b" style="border-color:rgba(201,169,110,0.3);">
+    <h1 class="text-4xl md:text-5xl" style="font-family:'EB Garamond',serif; color:#F7F4EE;">結帳 / Checkout</h1>
+  </header>
+
+  <!-- Progress Steps -->
+  <div class="flex items-center mb-12 max-w-lg">
+    <div class="flex items-center gap-2">
+      <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:#C9A96E; color:#0F1C14;">1</span>
+      <span class="text-xs font-semibold uppercase tracking-widest" style="color:#C9A96E;">收件資訊</span>
+    </div>
+    <div class="flex-1 h-px mx-3" style="background:rgba(201,169,110,0.3);"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(201,169,110,0.15); color:#C9A96E;">2</span>
+      <span class="text-xs font-semibold uppercase tracking-widest hidden sm:inline" style="color:#8A897F;">確認訂單</span>
+    </div>
+    <div class="flex-1 h-px mx-3" style="background:rgba(255,255,255,0.1);"></div>
+    <div class="flex items-center gap-2">
+      <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(255,255,255,0.08); color:#8A897F;">3</span>
+      <span class="text-xs font-semibold uppercase tracking-widest hidden sm:inline" style="color:#8A897F;">完成</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div v-if="loading" class="flex justify-center py-16">
+    <div class="w-10 h-10 rounded-full animate-spin" style="border:2px solid rgba(201,169,110,0.3); border-top-color:#C9A96E;"></div>
   </div>
 
   <div v-else class="flex flex-col lg:flex-row gap-8">
-    <!-- Left: Form -->
+
+    <!-- Left: Recipient Form -->
     <div class="lg:w-3/5">
-      <div class="bg-white rounded-2xl shadow-sm p-6">
-        <h2 class="font-medium text-text-primary mb-4">收件資訊</h2>
-        <div class="space-y-4">
+      <div class="checkout-panel p-8">
+        <h2 class="text-2xl mb-8" style="font-family:'EB Garamond',serif; color:#C9A96E;">收件資訊</h2>
+        <div class="space-y-6">
+
           <div>
-            <label class="block text-sm text-text-secondary mb-1">收件人姓名</label>
-            <input
-              v-model="form.recipientName"
-              type="text"
-              placeholder="請輸入收件人姓名"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary transition-colors"
-              :class="{ 'border-red-400': errors.recipientName }"
-            />
-            <p v-if="errors.recipientName" class="text-red-500 text-xs mt-1">{{ errors.recipientName }}</p>
+            <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">收件人姓名</label>
+            <input v-model="form.recipientName" type="text" placeholder="請輸入收件人姓名"
+                   class="checkout-input" :class="{ 'has-error': errors.recipientName }" />
+            <p v-if="errors.recipientName" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.recipientName }}</p>
           </div>
+
           <div>
-            <label class="block text-sm text-text-secondary mb-1">Email</label>
-            <input
-              v-model="form.recipientEmail"
-              type="email"
-              placeholder="請輸入 Email"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary transition-colors"
-              :class="{ 'border-red-400': errors.recipientEmail }"
-            />
-            <p v-if="errors.recipientEmail" class="text-red-500 text-xs mt-1">{{ errors.recipientEmail }}</p>
+            <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">Email</label>
+            <input v-model="form.recipientEmail" type="email" placeholder="your@email.com"
+                   class="checkout-input" :class="{ 'has-error': errors.recipientEmail }" />
+            <p v-if="errors.recipientEmail" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.recipientEmail }}</p>
           </div>
+
           <div>
-            <label class="block text-sm text-text-secondary mb-1">收件地址</label>
-            <input
-              v-model="form.recipientAddress"
-              type="text"
-              placeholder="請輸入收件地址"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary transition-colors"
-              :class="{ 'border-red-400': errors.recipientAddress }"
-            />
-            <p v-if="errors.recipientAddress" class="text-red-500 text-xs mt-1">{{ errors.recipientAddress }}</p>
+            <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">收件地址</label>
+            <input v-model="form.recipientAddress" type="text" placeholder="縣市、鄉鎮市區、路段、門號"
+                   class="checkout-input" :class="{ 'has-error': errors.recipientAddress }" />
+            <p v-if="errors.recipientAddress" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.recipientAddress }}</p>
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Right: Summary -->
+    <!-- Right: Order Summary -->
     <div class="lg:w-2/5">
-      <div class="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
-        <h2 class="font-medium text-text-primary mb-4">訂單摘要</h2>
-        <div class="space-y-3 mb-4">
-          <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm">
-            <span class="text-text-secondary">{{ item.product.name }} x {{ item.quantity }}</span>
-            <span class="text-text-primary">NT$ {{ (item.product.price * item.quantity).toLocaleString() }}</span>
+      <div class="checkout-panel p-8 lg:sticky lg:top-24">
+        <h2 class="text-2xl mb-6" style="font-family:'EB Garamond',serif; color:#C9A96E;">訂單摘要</h2>
+
+        <!-- Cart Items -->
+        <div class="space-y-4 mb-6">
+          <div v-for="item in cartItems" :key="item.id" class="flex items-center gap-4">
+            <div class="w-12 h-12 flex-shrink-0 overflow-hidden" style="border-radius:2px; border:1px solid rgba(201,169,110,0.2);">
+              <img :src="item.product.image_url || 'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=50'"
+                   :alt="item.product.name" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm truncate" style="color:#F7F4EE; font-family:'EB Garamond',serif;">{{ item.product.name }}</p>
+              <p class="text-xs" style="color:#8A897F;">× {{ item.quantity }}</p>
+            </div>
+            <span class="text-sm flex-shrink-0" style="color:#C9A96E;">NT$ {{ (item.product.price * item.quantity).toLocaleString() }}</span>
           </div>
         </div>
-        <div class="border-t border-gray-100 pt-3 space-y-2 text-sm">
+
+        <!-- Totals -->
+        <div class="border-t pt-4 space-y-3 text-sm mb-6" style="border-color:rgba(201,169,110,0.2);">
           <div class="flex justify-between">
-            <span class="text-text-secondary">商品小計</span>
-            <span>NT$ {{ cartTotal.toLocaleString() }}</span>
+            <span style="color:#C8C4BA;">商品小計</span>
+            <span style="color:#F7F4EE;">NT$ {{ cartTotal.toLocaleString() }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-text-secondary">運費</span>
-            <span>{{ cartTotal >= 500 ? '免運' : 'NT$ 150' }}</span>
+            <span style="color:#C8C4BA;">運費</span>
+            <span :style="{ color: cartTotal >= 500 ? '#7FAF87' : '#F7F4EE' }">{{ cartTotal >= 500 ? 'Free' : 'NT$ 150' }}</span>
           </div>
         </div>
-        <div class="border-t border-gray-100 pt-3 mt-3 flex justify-between items-center">
-          <span class="font-bold text-text-primary">總計</span>
-          <span class="font-bold text-xl text-rose-primary">
+
+        <div class="flex justify-between items-end pt-4 border-t mb-8" style="border-color:rgba(201,169,110,0.3);">
+          <span class="text-xs font-semibold uppercase tracking-widest" style="color:#F7F4EE;">結帳總額</span>
+          <span class="text-3xl" style="font-family:'EB Garamond',serif; color:#C9A96E;">
             NT$ {{ (cartTotal + (cartTotal >= 500 ? 0 : 150)).toLocaleString() }}
           </span>
         </div>
-        <button
-          @click="submitOrder"
-          :disabled="submitting"
-          class="w-full mt-4 bg-rose-primary text-white py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition-colors disabled:opacity-50"
-        >
+
+        <button @click="submitOrder" :disabled="submitting"
+                class="w-full py-4 text-xs font-semibold uppercase tracking-widest transition-opacity hover:opacity-85 disabled:opacity-50"
+                style="background:#C9A96E; color:#0F1C14; border:none; cursor:pointer; border-radius:2px;">
           {{ submitting ? '處理中...' : '確認送出訂單' }}
         </button>
       </div>
     </div>
+
   </div>
 </div>

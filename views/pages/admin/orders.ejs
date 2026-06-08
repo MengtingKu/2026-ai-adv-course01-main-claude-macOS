@@ -1,11 +1,15 @@
-<div id="app">
+<div id="app" v-cloak>
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-text-primary">訂單管理</h1>
+    <div>
+      <h1 class="text-2xl font-bold admin-title">訂單管理</h1>
+      <p class="text-sm mt-1 admin-subtitle">Browse and manage all customer orders.</p>
+    </div>
     <div class="flex items-center gap-3">
-      <label class="text-sm text-text-secondary">狀態篩選</label>
+      <label class="text-sm admin-subtitle">狀態篩選</label>
       <select
         v-model="statusFilter"
-        class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-rose-primary"
+        class="rounded-lg px-3 py-1.5 text-sm focus:outline-none"
+        style="background: var(--color-surface-mid); border: 1px solid rgba(201,169,110,0.15); color: var(--color-ivory-dim); cursor: pointer;"
       >
         <option value="">全部</option>
         <option value="pending">待付款</option>
@@ -16,58 +20,62 @@
   </div>
 
   <div v-if="loading" class="flex justify-center py-12">
-    <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+    <div class="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style="border-color: var(--color-gold); border-top-color: transparent;"></div>
   </div>
 
   <template v-else>
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-gray-50 text-text-muted">
-            <th class="text-left px-4 py-3 font-normal">訂單編號</th>
-            <th class="text-left px-4 py-3 font-normal">買家</th>
-            <th class="text-right px-4 py-3 font-normal">金額</th>
-            <th class="text-center px-4 py-3 font-normal">狀態</th>
-            <th class="text-right px-4 py-3 font-normal">日期</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="order in orders"
-            :key="order.id"
-            class="border-t border-gray-50 hover:bg-gray-50 cursor-pointer"
-            @click="viewDetail(order.id)"
-          >
-            <td class="px-4 py-3 text-text-primary">{{ order.order_no }}</td>
-            <td class="px-4 py-3 text-text-secondary">{{ order.recipient_name }}</td>
-            <td class="px-4 py-3 text-right text-text-primary">NT$ {{ order.total_amount.toLocaleString() }}</td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="text-xs px-2 py-1 rounded-full"
-                :class="statusMap[order.status]?.cls || 'bg-gray-100 text-gray-600'"
-              >
-                {{ statusMap[order.status]?.label || order.status }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-right text-text-muted">
-              {{ new Date(order.created_at).toLocaleDateString('zh-TW') }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table class="admin-table-card w-full text-sm">
+      <thead>
+        <tr>
+          <th class="text-left">訂單編號</th>
+          <th class="text-left">買家</th>
+          <th class="text-right">金額</th>
+          <th class="text-center">狀態</th>
+          <th class="text-right">日期</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="order in orders"
+          :key="order.id"
+          style="cursor: pointer;"
+          @click="viewDetail(order.id)"
+        >
+          <td><span class="admin-cell-name" style="font-family: 'EB Garamond', serif; letter-spacing: 0.01em;">{{ order.order_no }}</span></td>
+          <td><span class="admin-cell-muted">{{ order.recipient_name }}</span></td>
+          <td class="text-right"><span class="admin-cell-price">NT${{ order.total_amount.toLocaleString() }}</span></td>
+          <td class="text-center">
+            <span
+              class="text-xs px-2 py-0.5 rounded-full"
+              :class="statusMap[order.status]?.cls || 'badge-failed'"
+            >
+              {{ statusMap[order.status]?.label || order.status }}
+            </span>
+          </td>
+          <td class="text-right"><span class="admin-cell-muted">{{ new Date(order.created_at).toLocaleDateString('zh-TW') }}</span></td>
+        </tr>
+      </tbody>
+    </table>
 
     <!-- Pagination -->
-    <div v-if="pagination.totalPages > 1" class="flex justify-center gap-2 mt-6">
-      <button
-        v-for="p in pagination.totalPages"
-        :key="p"
-        @click="loadOrders(p)"
-        class="w-10 h-10 rounded-full text-sm transition-colors"
-        :class="p === pagination.page ? 'bg-rose-primary text-white' : 'bg-white text-text-secondary hover:bg-rose-bg'"
-      >
-        {{ p }}
-      </button>
+    <div v-if="pagination.total > 0" class="flex items-center justify-between mt-5">
+      <span class="admin-count-text">
+        顯示 {{ (pagination.page - 1) * pagination.limit + 1 }}–{{ Math.min(pagination.page * pagination.limit, pagination.total) }} 筆，共 {{ pagination.total }} 筆
+      </span>
+      <div class="flex items-center gap-1">
+        <button @click="loadOrders(pagination.page - 1)" :disabled="pagination.page <= 1" class="admin-pagination-btn">
+          <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;">chevron_left</span>
+        </button>
+        <button
+          v-for="p in pagination.totalPages" :key="p"
+          @click="loadOrders(p)"
+          class="admin-pagination-btn"
+          :class="{ active: p === pagination.page }"
+        >{{ p }}</button>
+        <button @click="loadOrders(pagination.page + 1)" :disabled="pagination.page >= pagination.totalPages" class="admin-pagination-btn">
+          <span class="material-symbols-outlined" style="font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;">chevron_right</span>
+        </button>
+      </div>
     </div>
   </template>
 
@@ -76,51 +84,48 @@
     <div class="absolute inset-0 bg-black/40" @click="detailVisible = false"></div>
     <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 p-6 max-h-[80vh] overflow-y-auto">
       <div v-if="detailLoading" class="flex justify-center py-8">
-        <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+        <div class="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style="border-color: var(--color-gold); border-top-color: transparent;"></div>
       </div>
       <template v-else-if="detailOrder">
         <div class="flex items-start justify-between mb-4">
-          <h3 class="text-lg font-semibold text-text-primary">訂單詳情</h3>
-          <button @click="detailVisible = false" class="text-text-muted hover:text-text-primary text-lg">&times;</button>
+          <h3 class="text-lg font-semibold text-gray-800">訂單詳情</h3>
+          <button @click="detailVisible = false" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
         </div>
 
         <div class="space-y-4 text-sm">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-text-muted">訂單編號</p>
-              <p class="text-text-primary">{{ detailOrder.order_no }}</p>
+              <p class="text-gray-400 mb-0.5">訂單編號</p>
+              <p class="text-gray-800 font-medium">{{ detailOrder.order_no }}</p>
             </div>
             <div>
-              <p class="text-text-muted">狀態</p>
-              <span
-                class="text-xs px-2 py-1 rounded-full"
-                :class="statusMap[detailOrder.status]?.cls || 'bg-gray-100 text-gray-600'"
-              >
+              <p class="text-gray-400 mb-0.5">狀態</p>
+              <span class="text-xs px-2 py-0.5 rounded-full" :class="statusMap[detailOrder.status]?.cls || 'bg-gray-100 text-gray-600'">
                 {{ statusMap[detailOrder.status]?.label || detailOrder.status }}
               </span>
             </div>
             <div>
-              <p class="text-text-muted">買家</p>
-              <p class="text-text-primary">{{ detailOrder.user?.name }} ({{ detailOrder.user?.email }})</p>
+              <p class="text-gray-400 mb-0.5">買家</p>
+              <p class="text-gray-800">{{ detailOrder.user?.name }} <span class="text-gray-400">({{ detailOrder.user?.email }})</span></p>
             </div>
             <div>
-              <p class="text-text-muted">日期</p>
-              <p class="text-text-primary">{{ new Date(detailOrder.created_at).toLocaleDateString('zh-TW') }}</p>
+              <p class="text-gray-400 mb-0.5">日期</p>
+              <p class="text-gray-800">{{ new Date(detailOrder.created_at).toLocaleDateString('zh-TW') }}</p>
             </div>
           </div>
 
           <div class="border-t border-gray-100 pt-4">
-            <p class="text-text-muted mb-2">收件資訊</p>
-            <p class="text-text-primary">{{ detailOrder.recipient_name }}</p>
-            <p class="text-text-secondary">{{ detailOrder.recipient_email }}</p>
-            <p class="text-text-secondary">{{ detailOrder.recipient_address }}</p>
+            <p class="text-gray-400 mb-2">收件資訊</p>
+            <p class="text-gray-800">{{ detailOrder.recipient_name }}</p>
+            <p class="text-gray-500">{{ detailOrder.recipient_email }}</p>
+            <p class="text-gray-500">{{ detailOrder.recipient_address }}</p>
           </div>
 
           <div class="border-t border-gray-100 pt-4">
-            <p class="text-text-muted mb-2">商品明細</p>
+            <p class="text-gray-400 mb-2">商品明細</p>
             <table class="w-full">
               <thead>
-                <tr class="text-text-muted border-b border-gray-100">
+                <tr class="text-gray-400 border-b border-gray-100">
                   <th class="text-left py-2 font-normal">商品名稱</th>
                   <th class="text-right py-2 font-normal">單價</th>
                   <th class="text-right py-2 font-normal">數量</th>
@@ -129,15 +134,15 @@
               </thead>
               <tbody>
                 <tr v-for="item in detailOrder.items" :key="item.id" class="border-b border-gray-50">
-                  <td class="py-2 text-text-primary">{{ item.product_name }}</td>
-                  <td class="py-2 text-right">NT$ {{ item.product_price.toLocaleString() }}</td>
-                  <td class="py-2 text-right">{{ item.quantity }}</td>
-                  <td class="py-2 text-right font-medium">NT$ {{ (item.product_price * item.quantity).toLocaleString() }}</td>
+                  <td class="py-2 text-gray-800">{{ item.product_name }}</td>
+                  <td class="py-2 text-right text-gray-500">NT${{ item.product_price.toLocaleString() }}</td>
+                  <td class="py-2 text-right text-gray-500">{{ item.quantity }}</td>
+                  <td class="py-2 text-right font-medium text-gray-800">NT${{ (item.product_price * item.quantity).toLocaleString() }}</td>
                 </tr>
               </tbody>
             </table>
             <div class="flex justify-end mt-3 pt-2 border-t border-gray-100">
-              <span class="font-bold text-rose-primary text-lg">總計 NT$ {{ detailOrder.total_amount.toLocaleString() }}</span>
+              <span class="font-bold text-lg" style="color: var(--color-gold);">總計 NT${{ detailOrder.total_amount.toLocaleString() }}</span>
             </div>
           </div>
         </div>

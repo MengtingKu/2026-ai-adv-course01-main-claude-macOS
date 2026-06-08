@@ -222,8 +222,20 @@ router.get('/', (req, res) => {
     'SELECT id, order_no, total_amount, status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC'
   ).all(req.user.userId);
 
+  const getItems = db.prepare(
+    `SELECT oi.product_name, oi.quantity, p.image_url
+     FROM order_items oi
+     LEFT JOIN products p ON oi.product_id = p.id
+     WHERE oi.order_id = ?
+     LIMIT 3`
+  );
+
+  const ordersWithItems = orders.map(function (order) {
+    return Object.assign({}, order, { items: getItems.all(order.id) });
+  });
+
   res.json({
-    data: { orders },
+    data: { orders: ordersWithItems },
     error: null,
     message: '成功'
   });
@@ -300,7 +312,12 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ data: null, error: 'NOT_FOUND', message: '訂單不存在' });
   }
 
-  const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  const items = db.prepare(
+    `SELECT oi.*, p.image_url
+     FROM order_items oi
+     LEFT JOIN products p ON oi.product_id = p.id
+     WHERE oi.order_id = ?`
+  ).all(order.id);
 
   res.json({
     data: { ...order, items },

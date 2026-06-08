@@ -1,109 +1,144 @@
-<div id="app">
-  <div class="min-h-[60vh] flex items-center justify-center">
-    <div class="bg-white rounded-2xl shadow-sm w-full max-w-md p-8">
-      <h1 class="text-2xl font-bold text-rose-primary text-center mb-6" style="font-family: 'Noto Serif TC', serif;">
-        花漾生活
-      </h1>
+<style>
+  .login-card {
+    background: #162110;
+    border: 1px solid rgba(201, 169, 110, 0.25);
+    border-radius: 2px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+  }
+  .input-dark {
+    display: block;
+    width: 100%;
+    background: #15221a;
+    border: 1px solid rgba(201, 169, 110, 0.2);
+    color: #F7F4EE;
+    border-radius: 2px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .input-dark::placeholder { color: #8A897F; }
+  .input-dark:focus { border-color: #C9A96E; }
+  .input-dark.has-error { border-color: rgba(239, 68, 68, 0.6); }
+  .login-tab {
+    padding: 0.5rem 0;
+    padding-bottom: 0.75rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8A897F;
+    cursor: pointer;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .login-tab.active { color: #C9A96E; border-bottom-color: #C9A96E; }
+  .login-tab:hover:not(.active) { color: #C8C4BA; }
+  .login-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: #C9A96E;
+    color: #0F1C14;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+  }
+  .login-btn:hover { opacity: 0.88; }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .grain-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+</style>
 
-      <!-- Tabs -->
-      <div class="flex mb-6 border border-gray-200 rounded-full overflow-hidden">
-        <button
-          @click="activeTab = 'login'; errors = {}"
-          class="flex-1 py-2 text-sm font-medium transition-colors"
-          :class="activeTab === 'login' ? 'bg-rose-primary text-white' : 'text-text-secondary hover:bg-gray-50'"
-        >
-          登入
-        </button>
-        <button
-          @click="activeTab = 'register'; errors = {}"
-          class="flex-1 py-2 text-sm font-medium transition-colors"
-          :class="activeTab === 'register' ? 'bg-rose-primary text-white' : 'text-text-secondary hover:bg-gray-50'"
-        >
-          註冊
-        </button>
+<div id="app">
+  <div class="grain-overlay"></div>
+  <div class="relative z-10 min-h-[calc(100vh-76px)] flex items-center justify-center py-12 px-4">
+    <div class="login-card w-full max-w-[440px] p-10">
+
+      <!-- Brand -->
+      <div class="text-center mb-8">
+        <div class="text-4xl italic mb-1" style="font-family:'EB Garamond',serif; color:#C9A96E;">花漾生活</div>
+        <div class="text-[10px] font-semibold uppercase" style="letter-spacing:0.4em; color:#8A897F;">HANA BOTANICAL ATELIER</div>
+      </div>
+
+      <!-- Tab Nav -->
+      <div class="flex gap-8 mb-8 border-b" style="border-color:rgba(201,169,110,0.15);">
+        <button @click="activeTab = 'login'; errors = {}"
+                class="login-tab" :class="{ active: activeTab === 'login' }">登入</button>
+        <button @click="activeTab = 'register'; errors = {}"
+                class="login-tab" :class="{ active: activeTab === 'register' }">註冊</button>
       </div>
 
       <!-- Login Form -->
-      <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="space-y-4">
+      <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="space-y-5">
         <div>
-          <label class="block text-sm text-text-secondary mb-1">Email</label>
-          <input
-            v-model="loginForm.email"
-            type="email"
-            placeholder="請輸入 Email"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary"
-            :class="{ 'border-red-400': errors.email }"
-          />
-          <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+          <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">Email</label>
+          <input v-model="loginForm.email" type="email" placeholder="your@email.com"
+                 class="input-dark" :class="{ 'has-error': errors.email }" />
+          <p v-if="errors.email" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.email }}</p>
         </div>
-
         <div>
-          <label class="block text-sm text-text-secondary mb-1">密碼</label>
-          <input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="請輸入密碼"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary"
-            :class="{ 'border-red-400': errors.password }"
-          />
-          <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+          <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">密碼</label>
+          <input v-model="loginForm.password" type="password" placeholder="••••••••"
+                 class="input-dark" :class="{ 'has-error': errors.password }" />
+          <p v-if="errors.password" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.password }}</p>
         </div>
-
-        <button
-          type="submit"
-          :disabled="submitting"
-          class="w-full bg-rose-primary text-white py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition-colors disabled:opacity-50"
-        >
+        <button type="submit" :disabled="submitting" class="login-btn">
           {{ submitting ? '登入中...' : '登入' }}
         </button>
       </form>
 
       <!-- Register Form -->
-      <form v-else @submit.prevent="handleRegister" class="space-y-4">
+      <form v-else @submit.prevent="handleRegister" class="space-y-5">
         <div>
-          <label class="block text-sm text-text-secondary mb-1">姓名</label>
-          <input
-            v-model="registerForm.name"
-            type="text"
-            placeholder="請輸入姓名"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary"
-            :class="{ 'border-red-400': errors.name }"
-          />
-          <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</p>
+          <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">姓名</label>
+          <input v-model="registerForm.name" type="text" placeholder="您的姓名"
+                 class="input-dark" :class="{ 'has-error': errors.name }" />
+          <p v-if="errors.name" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.name }}</p>
         </div>
-
         <div>
-          <label class="block text-sm text-text-secondary mb-1">Email</label>
-          <input
-            v-model="registerForm.email"
-            type="email"
-            placeholder="請輸入 Email"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary"
-            :class="{ 'border-red-400': errors.email }"
-          />
-          <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+          <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">Email</label>
+          <input v-model="registerForm.email" type="email" placeholder="your@email.com"
+                 class="input-dark" :class="{ 'has-error': errors.email }" />
+          <p v-if="errors.email" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.email }}</p>
         </div>
-
         <div>
-          <label class="block text-sm text-text-secondary mb-1">密碼</label>
-          <input
-            v-model="registerForm.password"
-            type="password"
-            placeholder="至少 6 個字元"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-rose-primary"
-            :class="{ 'border-red-400': errors.password }"
-          />
-          <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+          <label class="block text-xs font-semibold uppercase tracking-widest mb-2" style="color:#8A897F;">密碼</label>
+          <input v-model="registerForm.password" type="password" placeholder="至少 6 個字元"
+                 class="input-dark" :class="{ 'has-error': errors.password }" />
+          <p v-if="errors.password" class="text-xs mt-1" style="color:rgba(239,68,68,0.85);">{{ errors.password }}</p>
         </div>
-
-        <button
-          type="submit"
-          :disabled="submitting"
-          class="w-full bg-rose-primary text-white py-3 rounded-full text-sm font-medium hover:bg-rose-dark transition-colors disabled:opacity-50"
-        >
-          {{ submitting ? '註冊中...' : '註冊' }}
+        <button type="submit" :disabled="submitting" class="login-btn">
+          {{ submitting ? '處理中...' : '加入我們' }}
         </button>
       </form>
+
+      <!-- Switch Tab Link -->
+      <div class="mt-8 text-center">
+        <p class="text-xs" style="color:#8A897F;">
+          {{ activeTab === 'login' ? '還沒有帳號？' : '已有帳號？' }}
+          <button @click="activeTab = activeTab === 'login' ? 'register' : 'login'; errors = {}"
+                  style="color:#C9A96E; background:none; border:none; cursor:pointer; font-size:inherit; text-decoration:underline;">
+            {{ activeTab === 'login' ? '立即註冊' : '立即登入' }}
+          </button>
+        </p>
+      </div>
+
     </div>
   </div>
 </div>

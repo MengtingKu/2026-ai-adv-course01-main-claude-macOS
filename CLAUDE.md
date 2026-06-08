@@ -26,7 +26,7 @@ npm test           # 執行所有測試（Vitest + supertest）
 - [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — 架構、目錄結構、資料流
 - [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) — 開發規範、命名規則、環境變數
 - [docs/FEATURES.md](./docs/FEATURES.md) — 功能列表與業務邏輯說明
-- [docs/TESTING.md](./docs/TESTING.md) — 測試規範與指南
+- [docs/TESTING.md](./docs/TESTING.md) — 測試規範與指南（後端 API 測試）
 - [docs/CHANGELOG.md](./docs/CHANGELOG.md) — 更新日誌
 
 ## 必要遵守項目

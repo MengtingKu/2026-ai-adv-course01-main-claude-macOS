@@ -1,21 +1,307 @@
 @import "tailwindcss";
 
 @theme {
-  --color-rose-primary: #C4727F;
-  --color-rose-dark: #A85B67;
-  --color-rose-light: #E8A5AE;
-  --color-apricot: #D4956A;
-  --color-sage: #7EA584;
-  --color-cream: #FBF8F4;
-  --color-blush: #FFF1EC;
-  --color-rose-bg: #FDEAE4;
-  --color-text-primary: #2C2A28;
-  --color-text-secondary: #6B6560;
-  --color-text-muted: #9A948E;
+  /* === Tokyo Botanical Atelier === */
+  --color-forest:        #0F1C14;
+  --color-surface:       #162110;
+  --color-surface-mid:   #1a2a1f;
+  --color-gold:          #C9A96E;
+  --color-gold-dim:      #b8945d;
+  --color-ivory:         #F7F4EE;
+  --color-ivory-dim:     #C8C4BA;
+  --color-ivory-muted:   #8A897F;
+  --color-sage:          #7FAF87;
+
+  /* backward-compat aliases (cart / login / orders pages) */
+  --color-rose-primary:   #C9A96E;
+  --color-rose-dark:      #b8945d;
+  --color-rose-light:     rgba(201, 169, 110, 0.3);
+  --color-apricot:        #C9A96E;
+  --color-cream:          #0F1C14;
+  --color-blush:          #162110;
+  --color-rose-bg:        rgba(201, 169, 110, 0.08);
+  --color-text-primary:   #F7F4EE;
+  --color-text-secondary: #C8C4BA;
+  --color-text-muted:     #8A897F;
 }
 
 body {
-  font-family: 'Noto Sans TC', sans-serif;
-  background-color: var(--color-cream);
-  color: var(--color-text-primary);
+  font-family: 'Plus Jakarta Sans', 'Noto Serif TC', sans-serif;
+  background-color: #0F1C14;
+  color: #e5e2db;
 }
+
+/* --- Botanical UI components --- */
+
+.glass-card {
+  background: rgba(26, 46, 34, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201, 169, 110, 0.15);
+}
+
+.hero-gradient {
+  background: linear-gradient(to bottom, rgba(15, 28, 20, 0.35), #0F1C14);
+}
+
+.ambient-glow {
+  box-shadow: 0 0 40px rgba(201, 169, 110, 0.1);
+}
+
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(201, 169, 110, 0.4), transparent);
+}
+
+.nav-glass {
+  background: rgba(26, 46, 34, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(201, 169, 110, 0.12);
+}
+
+.product-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(201, 169, 110, 0.12);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ===== Product card enhanced hover ===== */
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(201, 169, 110, 0.18), 0 0 0 1px rgba(201, 169, 110, 0.2);
+}
+
+/* Glass card subtle hover */
+.glass-card {
+  transition: border-color 0.35s ease, box-shadow 0.35s ease;
+}
+.glass-card:hover {
+  border-color: rgba(201, 169, 110, 0.28);
+}
+
+/* ===== Motion System ===== */
+
+/* Nav scroll state — more opaque + shadow when scrolled */
+header.nav-scrolled {
+  background: rgba(15, 28, 20, 0.96) !important;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.32);
+}
+
+/* Hero entrance items — start hidden, JS removes inline styles to reveal */
+.motion-ready [data-hero-item] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scroll reveal base */
+.motion-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.motion-ready [data-reveal="left"]  { transform: translateX(-52px); }
+.motion-ready [data-reveal="right"] { transform: translateX(52px);  }
+.motion-ready [data-reveal="scale"] { transform: scale(0.92);       }
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger grid animation */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.reveal-child {
+  animation: reveal-up 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Gold divider scale-reveal */
+.motion-ready [data-divider] {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+[data-divider].is-visible {
+  transform: scaleX(1);
+}
+
+/* Scroll indicator pulse */
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0);    opacity: 0.55; }
+  50%       { transform: translateY(10px); opacity: 1;   }
+}
+[data-scroll-indicator] {
+  cursor: pointer;
+  transition: opacity 0.45s ease;
+  animation: scroll-bounce 2.2s ease-in-out infinite;
+  pointer-events: all;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready [data-hero-item],
+  .motion-ready [data-reveal],
+  .motion-ready [data-divider],
+  .reveal-child,
+  [data-scroll-indicator] {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ===== Admin Panel ===== */
+.admin-bar {
+  background: var(--color-surface);
+  border-bottom: 1px solid rgba(201, 169, 110, 0.12);
+}
+.admin-sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid rgba(201, 169, 110, 0.1);
+}
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  color: var(--color-ivory-muted);
+  transition: color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+.admin-nav-link:hover {
+  color: var(--color-ivory);
+  background: var(--color-surface-mid);
+}
+.admin-nav-link.active {
+  color: var(--color-gold);
+  background: var(--color-surface-mid);
+  border-right: 2px solid var(--color-gold);
+}
+.admin-title { color: var(--color-ivory); }
+.admin-subtitle { color: var(--color-ivory-muted); }
+
+.admin-btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-gold);
+  color: var(--color-forest);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  cursor: pointer;
+  border: none;
+}
+.admin-btn-gold:hover { background: var(--color-gold-dim); }
+
+.admin-pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-ivory-muted);
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+.admin-pagination-btn:hover:not(:disabled) {
+  color: var(--color-ivory);
+  background: var(--color-surface-mid);
+}
+.admin-pagination-btn.active {
+  background: var(--color-gold);
+  color: var(--color-forest);
+  font-weight: 500;
+}
+.admin-pagination-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.admin-count-text { font-size: 0.875rem; color: var(--color-ivory-muted); }
+
+/* Admin dark table */
+.admin-table-card {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(201, 169, 110, 0.08);
+}
+.admin-table-card thead tr {
+  background: var(--color-surface-mid);
+}
+.admin-table-card thead th {
+  color: var(--color-gold);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  padding: 0.75rem 1rem;
+}
+.admin-table-card tbody tr {
+  background: var(--color-surface);
+  border-top: 1px solid rgba(201, 169, 110, 0.06);
+  transition: background 0.15s;
+}
+.admin-table-card tbody tr:hover { background: var(--color-surface-mid); }
+.admin-table-card tbody td { padding: 0.875rem 1rem; vertical-align: middle; }
+.admin-cell-name  { color: var(--color-ivory); font-weight: 500; }
+.admin-cell-price { color: var(--color-gold); }
+.admin-cell-muted { color: var(--color-ivory-muted); }
+.admin-action-edit {
+  color: var(--color-ivory-dim);
+  border: 1px solid rgba(200, 196, 186, 0.25);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.admin-action-edit:hover { color: var(--color-ivory); border-color: rgba(200,196,186,0.5); }
+.admin-action-delete {
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.admin-action-delete:hover { border-color: #f87171; }
+.admin-prev-next {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--color-ivory-muted);
+  background: var(--color-surface-mid);
+  border: 1px solid rgba(201, 169, 110, 0.1);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.admin-prev-next:hover:not(:disabled) { color: var(--color-ivory); background: rgba(42, 62, 48, 0.9); }
+.admin-prev-next:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Status badges (dark-bg compatible) */
+.badge-pending { background: rgba(234,179,8,0.12); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+.badge-paid    { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.badge-failed  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+/* Vue：在編譯完成前隱藏整個 app，避免 v-if 對話框等模板在掛載前閃現 (FOUC) */
+[v-cloak] { display: none !important; }

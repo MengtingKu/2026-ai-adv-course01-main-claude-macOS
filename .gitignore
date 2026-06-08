@@ -17,6 +17,9 @@ backend-project/public/css/output.css
 .env.*
 !.env.example
 
+# MCP config (含 API key，勿上推)
+.mcp.json
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -37,4 +40,12 @@ coverage/
 *.swp
 
 .claude/*.local.json
+.claude/skills/*
+!.claude/skills/e2e-checkout/
 public/css/output.css
+
+# Playwright MCP 產出（截圖、快照、console log），皆為一次性除錯產物
+.playwright-mcp/
+
+# 本機設計稿比對參考圖（非專案原始碼）
+kuku/
